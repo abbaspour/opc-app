@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Admin, Resource, ListGuesser} from 'react-admin';
+import {Admin, Resource, ListGuesser, EditGuesser} from 'react-admin';
 
 import {useAuth0, withAuth0, withAuthenticationRequired} from "@auth0/auth0-react";
 import repoProvider from "./providers/repositoryProvider";
@@ -10,7 +10,7 @@ const App = () => {
 
     return (
         <Admin dataProvider={dataProvider}>
-            <Resource name="bundles" list={ListGuesser}/>
+            <Resource name="bundles" list={ListGuesser} edit={EditGuesser}/>
         </Admin>
     );
 }

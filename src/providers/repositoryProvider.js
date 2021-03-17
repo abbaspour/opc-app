@@ -36,10 +36,10 @@ class RepositoryProvider {
 
         return this.httpClient(url).then(({headers, json}) => {
             console.log(`getList received data: ${JSON.stringify(json)}`);
-            const data = json.map( ({name, ...rest}) => ({...rest, id: name}))
-            const result =  {
+            const data = json.map(({name, ...rest}) => ({...rest, id: name}))
+            const result = {
                 data,
-                total:  data.length //parseInt(headers.get('content-range').split('/').pop(), 10),
+                total: data.length //parseInt(headers.get('content-range').split('/').pop(), 10),
             };
             console.log(`getList result: ${JSON.stringify(result)}`);
             return result;
@@ -47,9 +47,9 @@ class RepositoryProvider {
     }
 
     getOne(resource, params) {
-        return this.httpClient(`${apiUrl}/${resource}/${params.id}`).then(({json}) => ({
-            data: json,
-        }))
+        return this.httpClient(`${apiUrl}/${resource}/${params.id}`).then(({headers, body}) => ({
+            data: {id: params.id, payload: body, size: headers.get('Content-Length')},
+        }));
     }
 
     getMany(resource, params) {
