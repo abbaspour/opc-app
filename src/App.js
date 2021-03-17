@@ -11,6 +11,7 @@ const App = () => {
     return (
         <Admin dataProvider={dataProvider}>
             <Resource name="bundles" list={ListGuesser} edit={EditGuesser}/>
+            <Resource name="policies" list={ListGuesser} edit={EditGuesser}/>
         </Admin>
     );
 }
