@@ -1,0 +1,15 @@
+[build]
+base = "."
+publish = "build"
+command = "npm run build"
+
+    [build.environment]
+    CI = "false"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+    [redirects.headers]
+    Access-Control-Allow-Origin = "*.opalpolicy.com"
