@@ -1,18 +1,59 @@
 import {fetchUtils} from 'react-admin';
 import {stringify} from 'query-string';
+import {DataProvider} from 'react-admin';
+import {
+    DeleteManyParams, DeleteManyResult,
+    DeleteParams,
+    GetListParams,
+    GetListResult,
+    GetManyParams,
+    GetManyReferenceParams, GetManyReferenceResult,
+    GetManyResult,
+    GetOneResult,
+    Record, UpdateManyParams, UpdateManyResult, UpdateParams, UpdateResult,
+    CreateParams, CreateResult, DeleteResult, GetOneParams
+} from "ra-core";
+import {Options} from "ra-core/lib/dataProvider/fetch";
 
 const apiUrl = 'https://repo.opalpolicy.com/v1';
 
-class RepositoryProvider {
+type TokenProvider = () => Promise<string>;
 
-    constructor(tokenProvider) {
-        this.tokenProvider = tokenProvider;
+interface Bundle extends Record {
+    id: string,
+    size: number,
+    etag: string,
+    lastModified: string
+}
+
+interface Policy extends Record {
+    id: string,
+    size: number,
+    etag: string,
+    lastModified: string
+}
+
+interface RepositoryRecord extends Bundle, Policy {
+}
+
+interface RepositoryProviderInterface extends DataProvider {
+}
+
+class RepositoryProvider implements RepositoryProviderInterface {
+
+    constructor(readonly tokenProvider: TokenProvider) {
     }
 
-    httpClient(url, options = {}) {
+    httpClient(url: string, options?: Options): Promise<{
+        status: number;
+        headers: Headers;
+        body: string;
+        json: any;
+    }> {
         return new Promise((resolve, reject) => {
             this.tokenProvider()
                 .then(token => {
+                    if (!options) options = {};
                     options.user = {
                         authenticated: true,
                         token: 'Bearer ' + token
@@ -24,7 +65,7 @@ class RepositoryProvider {
         });
     }
 
-    getList(resource, params) {
+    getList<RepositoryRecord>(resource: string, params: GetListParams): Promise<GetListResult<RepositoryRecord>> {
         const {page, perPage} = params.pagination;
         const {field, order} = params.sort;
         const query = {
@@ -34,8 +75,9 @@ class RepositoryProvider {
         };
         const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
-        return this.httpClient(url).then(({headers, json}) => {
+        return this.httpClient(url).then(({/*headers,*/ json}) => {
             console.log(`getList received data: ${JSON.stringify(json)}`);
+            // @ts-ignore
             const data = json.map(({name, ...rest}) => ({...rest, id: name}))
             const result = {
                 data,
@@ -46,13 +88,20 @@ class RepositoryProvider {
         });
     }
 
-    getOne(resource, params) {
-        return this.httpClient(`${apiUrl}/${resource}/${params.id}`).then(({headers, body}) => ({
-            data: {id: params.id, payload: body, size: headers.get('Content-Length')},
-        }));
+    getOne<RepositoryRecord>(resource: string, params: GetOneParams): Promise<GetOneResult<RepositoryRecord>> {
+        return this.httpClient(`${apiUrl}/${resource}/${params.id}`)
+            .then(({headers, body}) => ({
+                // @ts-ignore
+                data: {
+                    id: params.id, /*payload: body,*/
+                    size: headers.get('Content-Length'),
+                    etag: 'N/A',
+                    lastModified: 'N/A'
+                } as RepositoryRecord,
+            }));
     }
 
-    getMany(resource, params) {
+    getMany<RepositoryRecord>(resource: string, params: GetManyParams): Promise<GetManyResult<RepositoryRecord>> {
         const query = {
             filter: JSON.stringify({id: params.ids}),
         };
@@ -60,7 +109,7 @@ class RepositoryProvider {
         return this.httpClient(url).then(({json}) => ({data: json}));
     }
 
-    getManyReference(resource, params) {
+    getManyReference<RepositoryRecord>(resource: string, params: GetManyReferenceParams): Promise<GetManyReferenceResult<RepositoryRecord>> {
         const {page, perPage} = params.pagination;
         const {field, order} = params.sort;
         const query = {
@@ -75,18 +124,18 @@ class RepositoryProvider {
 
         return this.httpClient(url).then(({headers, json}) => ({
             data: json,
-            total: parseInt(headers.get('content-range').split('/').pop(), 10),
+            total: json.length // parseInt(headers.get('content-range').split('/').pop(), 10),
         }));
     }
 
-    update(resource, params) {
+    update<RepositoryRecord>(resource: string, params: UpdateParams): Promise<UpdateResult<RepositoryRecord>> {
         return this.httpClient(`${apiUrl}/${resource}/${params.id}`, {
             method: 'PUT',
             body: JSON.stringify(params.data),
         }).then(({json}) => ({data: json}))
     }
 
-    updateMany(resource, params) {
+    updateMany(resource: string, params: UpdateManyParams): Promise<UpdateManyResult> {
         const query = {
             filter: JSON.stringify({id: params.ids}),
         };
@@ -96,7 +145,7 @@ class RepositoryProvider {
         }).then(({json}) => ({data: json}));
     }
 
-    create(resource, params) {
+    create<RepositoryRecord>(resource: string, params: CreateParams): Promise<CreateResult<RepositoryRecord>> {
         return this.httpClient(`${apiUrl}/${resource}`, {
             method: 'POST',
             body: JSON.stringify(params.data),
@@ -105,13 +154,13 @@ class RepositoryProvider {
         }))
     }
 
-    delete(resource, params) {
+    delete<RepositoryRecord>(resource: string, params: DeleteParams): Promise<DeleteResult<RepositoryRecord>> {
         return this.httpClient(`${apiUrl}/${resource}/${params.id}`, {
             method: 'DELETE',
         }).then(({json}) => ({data: json}))
     }
 
-    deleteMany(resource, params) {
+    deleteMany(resource: string, params: DeleteManyParams): Promise<DeleteManyResult> {
         const query = {
             filter: JSON.stringify({id: params.ids}),
         };
@@ -121,6 +170,6 @@ class RepositoryProvider {
     }
 }
 
-const provider = (tokenProvider) => new RepositoryProvider(tokenProvider);
+const provider = (tokenProvider: TokenProvider) => new RepositoryProvider(tokenProvider);
 
 export default provider;
