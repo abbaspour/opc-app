@@ -15,7 +15,7 @@ import {
 } from "ra-core";
 import {Options} from "ra-core/lib/dataProvider/fetch";
 
-const apiUrl = 'https://repo.opalpolicy.com/v1';
+const apiUrl = 'https://api.opalpolicy.com/repository/v1';
 
 type TokenProvider = () => Promise<string>;
 
