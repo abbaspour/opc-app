@@ -1,5 +1,5 @@
 [build]
-base = "."
+base = ""
 publish = "build"
 command = "npm run build"
 
@@ -11,5 +11,5 @@ from = "/*"
 to = "/index.html"
 status = 200
 
-    [redirects.headers]
-    Access-Control-Allow-Origin = "*.opalpolicy.com"
+    #[redirects.headers]
+    #Access-Control-Allow-Origin = "*.opalpolicy.com"
