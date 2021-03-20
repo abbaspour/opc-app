@@ -5,9 +5,7 @@ import {useAuth0, withAuth0, withAuthenticationRequired} from "@auth0/auth0-reac
 import repoProvider from "./providers/repositoryProvider";
 import {DataProvider} from "ra-core";
 
-import { createBrowserHistory } from "history";
-
-const history = createBrowserHistory();
+import history from "./utils/history";
 
 const App = () => {
   const { getAccessTokenSilently } = useAuth0();
@@ -17,6 +15,7 @@ const App = () => {
       <Admin dataProvider={dataProvider} history={history}>
         <Resource name="bundles" list={ListGuesser} edit={EditGuesser}/>
         <Resource name="policies" list={ListGuesser} edit={EditGuesser}/>
+        <Resource name="instances" list={ListGuesser} edit={EditGuesser}/>
       </Admin>
   );
 }

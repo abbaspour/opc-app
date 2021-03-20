@@ -5,6 +5,16 @@ import App from './App';
 import {Auth0Provider} from "@auth0/auth0-react";
 import reportWebVitals from './reportWebVitals';
 import config from "./auth_config.json";
+import history from "./utils/history";
+import {AppState} from "@auth0/auth0-react/src/auth0-provider";
+
+const onRedirectCallback = (appState : AppState) => {
+    history.push(
+        appState && appState.returnTo
+            ? appState.returnTo
+            : window.location.pathname
+    );
+};
 
 ReactDOM.render(
     <Auth0Provider
@@ -12,7 +22,8 @@ ReactDOM.render(
         clientId={config.clientId}
         audience={config.audience}
         scope="account:admin"
-        redirectUri={window.location.origin}>
+        redirectUri={window.location.origin}
+        onRedirectCallback={onRedirectCallback}>
         <React.StrictMode>
             <App/>
         </React.StrictMode>

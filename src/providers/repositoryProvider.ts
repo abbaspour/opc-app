@@ -15,7 +15,7 @@ import {
 } from "ra-core";
 import {Options} from "ra-core/lib/dataProvider/fetch";
 
-const apiUrl = 'https://api.opalpolicy.com/repository/v1';
+const apiUrl = 'https://api.opalpolicy.com';
 
 type TokenProvider = () => Promise<string>;
 
@@ -43,6 +43,20 @@ class RepositoryProvider implements RepositoryProviderInterface {
 
     constructor(readonly tokenProvider: TokenProvider) {
     }
+
+
+    type(resource: string) : string {
+        switch (resource) {
+            case 'bundles':
+            case 'policies':
+                return 'repository';
+            case 'instances':
+                return 'runtime';
+            default:
+                return 'unknown';
+        }
+    }
+
 
     httpClient(url: string, options?: Options): Promise<{
         status: number;
@@ -73,7 +87,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
             range: JSON.stringify([(page - 1) * perPage, page * perPage - 1]),
             filter: JSON.stringify(params.filter),
         };
-        const url = `${apiUrl}/${resource}?${stringify(query)}`;
+        const url = `${apiUrl}/${this.type(resource)}/v1/${resource}?${stringify(query)}`;
 
         return this.httpClient(url).then(({/*headers,*/ json}) => {
             console.log(`getList received data: ${JSON.stringify(json)}`);
@@ -89,7 +103,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
     }
 
     getOne<RepositoryRecord>(resource: string, params: GetOneParams): Promise<GetOneResult<RepositoryRecord>> {
-        return this.httpClient(`${apiUrl}/${resource}/${params.id}`)
+        return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}/${params.id}`)
             .then(({headers, body}) => ({
                 // @ts-ignore
                 data: {
@@ -105,7 +119,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
         const query = {
             filter: JSON.stringify({id: params.ids}),
         };
-        const url = `${apiUrl}/${resource}?${stringify(query)}`;
+        const url = `${apiUrl}/${this.type(resource)}/v1/${resource}?${stringify(query)}`;
         return this.httpClient(url).then(({json}) => ({data: json}));
     }
 
@@ -120,7 +134,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
                 [params.target]: params.id,
             }),
         };
-        const url = `${apiUrl}/${resource}?${stringify(query)}`;
+        const url = `${apiUrl}/${this.type(resource)}/v1/${resource}?${stringify(query)}`;
 
         return this.httpClient(url).then(({headers, json}) => ({
             data: json,
@@ -129,7 +143,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
     }
 
     update<RepositoryRecord>(resource: string, params: UpdateParams): Promise<UpdateResult<RepositoryRecord>> {
-        return this.httpClient(`${apiUrl}/${resource}/${params.id}`, {
+        return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}/${params.id}`, {
             method: 'PUT',
             body: JSON.stringify(params.data),
         }).then(({json}) => ({data: json}))
@@ -139,14 +153,14 @@ class RepositoryProvider implements RepositoryProviderInterface {
         const query = {
             filter: JSON.stringify({id: params.ids}),
         };
-        return this.httpClient(`${apiUrl}/${resource}?${stringify(query)}`, {
+        return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}?${stringify(query)}`, {
             method: 'PUT',
             body: JSON.stringify(params.data),
         }).then(({json}) => ({data: json}));
     }
 
     create<RepositoryRecord>(resource: string, params: CreateParams): Promise<CreateResult<RepositoryRecord>> {
-        return this.httpClient(`${apiUrl}/${resource}`, {
+        return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}`, {
             method: 'POST',
             body: JSON.stringify(params.data),
         }).then(({json}) => ({
@@ -155,7 +169,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
     }
 
     delete<RepositoryRecord>(resource: string, params: DeleteParams): Promise<DeleteResult<RepositoryRecord>> {
-        return this.httpClient(`${apiUrl}/${resource}/${params.id}`, {
+        return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}/${params.id}`, {
             method: 'DELETE',
         }).then(({json}) => ({data: json}))
     }
@@ -164,7 +178,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
         const query = {
             filter: JSON.stringify({id: params.ids}),
         };
-        return this.httpClient(`${apiUrl}/${resource}?${stringify(query)}`, {
+        return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}?${stringify(query)}`, {
             method: 'DELETE',
         }).then(({json}) => ({data: json}));
     }
