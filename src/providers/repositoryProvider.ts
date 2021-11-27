@@ -15,7 +15,7 @@ import {
 } from "ra-core";
 import {Options} from "ra-core/lib/dataProvider/fetch";
 
-const apiUrl = 'https://api.opalpolicy.com';
+const apiUrl = 'https://api.openpolicy.cloud'; // TODO
 
 type TokenProvider = () => Promise<string>;
 
@@ -24,6 +24,7 @@ interface Bundle extends Record {
     size: number,
     etag: string,
     lastModified: string
+    [key: string]: any;
 }
 
 interface Policy extends Record {
@@ -31,15 +32,25 @@ interface Policy extends Record {
     size: number,
     etag: string,
     lastModified: string
+    [key: string]: any;
 }
 
-interface RepositoryRecord extends Bundle, Policy {
+interface RepositoryRecord extends Bundle, Policy /*Record*/ {
+/*
+    id: string;
+    size: number;
+    etag: string;
+    lastModified: string;
+    [key: string]: any;
+*/
 }
 
+/*
 interface RepositoryProviderInterface extends DataProvider {
 }
+*/
 
-class RepositoryProvider implements RepositoryProviderInterface {
+class RepositoryProvider implements /*RepositoryProviderInterface*/DataProvider {
 
     constructor(readonly tokenProvider: TokenProvider) {
     }
@@ -79,7 +90,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
         });
     }
 
-    getList<RepositoryRecord>(resource: string, params: GetListParams): Promise<GetListResult<RepositoryRecord>> {
+    getList<RepositoryRecord extends Record>(resource: string, params: GetListParams): Promise<GetListResult<RepositoryRecord>> {
         const {page, perPage} = params.pagination;
         const {field, order} = params.sort;
         const query = {
@@ -102,7 +113,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
         });
     }
 
-    getOne<RepositoryRecord>(resource: string, params: GetOneParams): Promise<GetOneResult<RepositoryRecord>> {
+    getOne<RepositoryRecord extends Record>(resource: string, params: GetOneParams): Promise<GetOneResult<RepositoryRecord>> {
         return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}/${params.id}`)
             .then(({headers, body}) => ({
                 // @ts-ignore
@@ -115,7 +126,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
             }));
     }
 
-    getMany<RepositoryRecord>(resource: string, params: GetManyParams): Promise<GetManyResult<RepositoryRecord>> {
+    getMany<RepositoryRecord extends Record>(resource: string, params: GetManyParams): Promise<GetManyResult<RepositoryRecord>> {
         const query = {
             filter: JSON.stringify({id: params.ids}),
         };
@@ -123,7 +134,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
         return this.httpClient(url).then(({json}) => ({data: json}));
     }
 
-    getManyReference<RepositoryRecord>(resource: string, params: GetManyReferenceParams): Promise<GetManyReferenceResult<RepositoryRecord>> {
+    getManyReference<RepositoryRecord extends Record>(resource: string, params: GetManyReferenceParams): Promise<GetManyReferenceResult<RepositoryRecord>> {
         const {page, perPage} = params.pagination;
         const {field, order} = params.sort;
         const query = {
@@ -142,7 +153,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
         }));
     }
 
-    update<RepositoryRecord>(resource: string, params: UpdateParams): Promise<UpdateResult<RepositoryRecord>> {
+    update<RepositoryRecord extends Record>(resource: string, params: UpdateParams): Promise<UpdateResult<RepositoryRecord>> {
         return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}/${params.id}`, {
             method: 'PUT',
             body: JSON.stringify(params.data),
@@ -159,7 +170,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
         }).then(({json}) => ({data: json}));
     }
 
-    create<RepositoryRecord>(resource: string, params: CreateParams): Promise<CreateResult<RepositoryRecord>> {
+    create<RepositoryRecord extends Record>(resource: string, params: CreateParams): Promise<CreateResult<RepositoryRecord>> {
         return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}`, {
             method: 'POST',
             body: JSON.stringify(params.data),
@@ -168,7 +179,7 @@ class RepositoryProvider implements RepositoryProviderInterface {
         }))
     }
 
-    delete<RepositoryRecord>(resource: string, params: DeleteParams): Promise<DeleteResult<RepositoryRecord>> {
+    delete<RepositoryRecord extends Record>(resource: string, params: DeleteParams): Promise<DeleteResult<RepositoryRecord>> {
         return this.httpClient(`${apiUrl}/${this.type(resource)}/v1/${resource}/${params.id}`, {
             method: 'DELETE',
         }).then(({json}) => ({data: json}))
