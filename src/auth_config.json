@@ -1,5 +1,5 @@
 {
-  "domain": "opal-dev.au.auth0.com",
-  "clientId": "brkYdfxfLk1zUDneAevXyZJ0mR6Ai2bH",
-  "audience": "dev.opal.api"
+  "domain": "id.openpolicy.cloud",
+  "clientId": "FhhR3b3orfk6b7DBvQMAoj0GpIUTdMoo",
+  "audience": "opc.api"
 }
