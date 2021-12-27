@@ -1,4 +1,4 @@
-NPM='/usr/local/opt/node@16/bin/npm'
+NPM='npm'
 
 start: node_modules
 	$(NPM) start
