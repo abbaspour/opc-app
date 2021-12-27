@@ -12,4 +12,4 @@ to = "/index.html"
 status = 200
 
     #[redirects.headers]
-    #Access-Control-Allow-Origin = "*.opalpolicy.com"
+    #Access-Control-Allow-Origin = "*.openpolicy.cloud"
